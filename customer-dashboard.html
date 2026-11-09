@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agroverse – Customer Dashboard</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+.dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 68px);}
+.sidebar{background:#0F2419;padding:24px 0;position:sticky;top:68px;height:calc(100vh - 68px);overflow-y:auto;}
+.sidebar-user{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px;text-align:center;}
+.sidebar-avatar{width:62px;height:62px;border-radius:50%;object-fit:cover;border:3px solid var(--leaf);margin-bottom:9px;}
+.sidebar-name{color:#fff;font-weight:700;font-size:14px;}
+.sidebar-role{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px;}
+.sidebar-badge{display:inline-block;background:var(--sky);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:18px;margin-top:5px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 20px;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;}
+.nav-item:hover,.nav-item.active{background:rgba(82,183,136,.15);color:#95D5B2;}
+.nav-item .icon{font-size:17px;width:22px;text-align:center;}
+.nav-section{padding:10px 20px 5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3);}
+.dash-content{background:var(--cream);padding:28px 32px;overflow-x:hidden;}
+.dash-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:10px;}
+.dash-topbar h2{font-family:'Playfair Display',serif;font-size:26px;color:var(--earth);}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi-card{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;}
+.kpi-icon{font-size:32px;flex-shrink:0;}
+.kpi-val{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:var(--earth);line-height:1;}
+.kpi-label{font-size:11px;color:var(--gray);margin-bottom:2px;}
+.dash-panel{display:none;}
+.dash-panel.active{display:block;}
+.section-card{background:#fff;border-radius:16px;padding:22px;box-shadow:var(--shadow);margin-bottom:20px;}
+.section-card h3{font-family:'Playfair Display',serif;font-size:18px;color:var(--earth);margin-bottom:16px;}
+/* ORDER CARD */
+.order-card{border:1.5px solid var(--gray-light);border-radius:14px;padding:16px;margin-bottom:12px;transition:all .2s;}
+.order-card:hover{border-color:var(--earth-light);box-shadow:var(--shadow);}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.order-id{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--gray);}
+.badge{padding:4px 12px;border-radius:18px;font-size:11px;font-weight:700;}
+.badge-pending{background:#fff8e0;color:#8B6914;}
+.badge-confirmed{background:#e0f0ff;color:#1a5f9a;}
+.badge-delivered{background:#D4F0E2;color:#1A7A48;}
+.badge-paid{background:#D4F0E2;color:#1A7A48;}
+.order-items-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.item-chip{display:flex;align-items:center;gap:6px;background:#f0f4ee;border-radius:9px;padding:6px 10px;}
+.item-chip img{width:28px;height:28px;border-radius:5px;object-fit:cover;}
+.item-chip span{font-size:11px;font-weight:600;color:var(--dark);}
+.order-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.order-total{font-family:'Space Mono',monospace;font-weight:700;color:var(--earth);}
+/* TRACKER */
+.tracker{display:flex;align-items:center;margin:14px 0;}
+.track-step{display:flex;flex-direction:column;align-items:center;flex:1;}
+.track-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;z-index:1;}
+.track-dot.done{background:var(--leaf);color:#fff;}
+.track-dot.active{background:var(--earth);color:#fff;box-shadow:0 0 0 4px rgba(52,183,136,.2);}
+.track-dot.pending{background:var(--gray-light);color:var(--gray);}
+.track-line{height:3px;flex:1;margin-top:-14px;}
+.track-line.done{background:var(--leaf);}
+.track-line.pending{background:var(--gray-light);}
+.track-label{font-size:9px;color:var(--gray);margin-top:5px;text-align:center;font-weight:600;}
+/* NOTIFICATION BELL */
+.notif-bell{position:relative;cursor:pointer;}
+.notif-count{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.notif-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f4ee;align-items:flex-start;}
+.notif-item:last-child{border:none;}
+.notif-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+@keyframes pulse-new{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.3)}}
+.notif-dot.new{animation:pulse-new 1s infinite;background:#52B788;}
+@media(max-width:900px){.dash-layout{grid-template-columns:1fr;}.sidebar{position:static;height:auto;display:flex;flex-wrap:wrap;padding:10px;}.nav-section{display:none;}.nav-item{padding:9px 12px;font-size:12px;}.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div id="nav-root"></div>
+<div class="dash-layout">
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <img class="sidebar-avatar" src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=120&q=80" alt="Customer"/>
+      <div class="sidebar-name" id="sidebarName">Priya Sharma</div>
+      <div class="sidebar-role">🛒 Valued Customer</div>
+      <div class="sidebar-badge">💎 Gold Member</div>
+    </div>
+    <div class="nav-section">My Account</div>
+    <a class="nav-item active" onclick="showPanel('overview',this)"><span class="icon">🏠</span> Overview</a>
+    <a class="nav-item" onclick="showPanel('orders',this)"><span class="icon">📦</span> My Orders <span id="orderBadge" style="background:var(--red);color:#fff;border-radius:9px;padding:1px 7px;font-size:10px;margin-left:auto;display:none">0</span></a>
+    <a class="nav-item" onclick="showPanel('notifications',this)"><span class="icon">🔔</span> Notifications <span id="notifBadge" style="background:var(--red);color:#fff;border-radius:9px;padding:1px 7px;font-size:10px;margin-left:auto">0</span></a>
+    <div class="nav-section">Discover</div>
+    <a class="nav-item" href="shop.html"><span class="icon">🛍️</span> Shop</a>
+    <a class="nav-item" href="market.html"><span class="icon">📊</span> Market Prices</a>
+    <a class="nav-item" href="weather.html"><span class="icon">🌤️</span> Weather</a>
+    <div class="nav-section">Account</div>
+    <a class="nav-item" href="login.html" style="color:rgba(255,100,100,.7)"><span class="icon">🚪</span> Logout</a>
+  </aside>
+
+  <main class="dash-content">
+    <div class="dash-topbar">
+      <div><h2 id="panelTitle">Welcome Back! 🌿</h2><p style="font-size:13px;color:var(--gray)">Track your orders and payments</p></div>
+      <a href="shop.html" class="btn btn-primary">🛍️ Shop Now</a>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="dash-panel active" id="panel-overview">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-icon">📦</div><div><div class="kpi-label">Total Orders</div><div class="kpi-val" id="kpiOrders">0</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">💰</div><div><div class="kpi-label">Total Spent</div><div class="kpi-val" id="kpiSpent">₹0</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">⏳</div><div><div class="kpi-label">Pending</div><div class="kpi-val" id="kpiPending">0</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">✅</div><div><div class="kpi-label">Delivered</div><div class="kpi-val" id="kpiDelivered">0</div></div></div>
+      </div>
+      <div class="section-card">
+        <h3>📦 Recent Orders</h3>
+        <div id="recentOrdersList"></div>
+      </div>
+      <div class="section-card">
+        <h3>🔔 Notifications</h3>
+        <div id="overviewNotifs"></div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="dash-panel" id="panel-orders">
+      <div class="section-card">
+        <h3>📦 All My Orders</h3>
+        <div id="allOrdersList"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="dash-panel" id="panel-notifications">
+      <div class="section-card">
+        <h3>🔔 Notifications</h3>
+        <div id="allNotifsList"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('');
+const user = JSON.parse(localStorage.getItem('av_user')||'{"name":"Priya Sharma"}');
+document.getElementById('sidebarName').textContent = user.name || 'Priya Sharma';
+document.getElementById('panelTitle').textContent = 'Welcome, '+(user.name||'Priya').split(' ')[0]+'! 🌿';
+
+// ── LOAD ORDERS ──
+let cachedOrders = JSON.parse(localStorage.getItem('av_cust_orders')||'[]');
+
+async function syncBackendOrders() {
+  try {
+    const backendOrders = await apiFetch('/orders');
+    if (backendOrders && Array.isArray(backendOrders) && backendOrders.length) {
+      // Map backend orders to customer dashboard format
+      const mapped = backendOrders.map(o => {
+        const d = new Date(o.createdAt || Date.now());
+        return {
+          id: '#' + o.id,
+          date: d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+          time: d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+          items: o.items || [],
+          total: o.total || 0,
+          status: o.status || 'pending',
+          payMethod: 'UPI'
+        };
+      });
+      cachedOrders = mapped;
+      localStorage.setItem('av_cust_orders', JSON.stringify(mapped));
+    }
+  } catch(e) {
+    // fallback to localStorage
+  }
+}
+
+function getOrders(){ return cachedOrders; }
+
+function computeKPIs(){
+  const orders = getOrders();
+  const spent = orders.reduce((s,o)=>s+o.total,0);
+  document.getElementById('kpiOrders').textContent = orders.length;
+  document.getElementById('kpiSpent').textContent = '₹'+spent.toLocaleString('en-IN');
+  document.getElementById('kpiPending').textContent = orders.filter(o=>o.status==='pending'||o.status==='confirmed').length;
+  document.getElementById('kpiDelivered').textContent = orders.filter(o=>o.status==='delivered').length;
+  // badge
+  const pending = orders.filter(o=>o.status==='pending').length;
+  const badge = document.getElementById('orderBadge');
+  if(pending>0){ badge.textContent=pending; badge.style.display=''; }
+  else badge.style.display='none';
+}
+
+function statusBadge(s){
+  const map={pending:'badge-pending',confirmed:'badge-confirmed',delivered:'badge-delivered'};
+  const labels={pending:'⏳ Awaiting Farmer',confirmed:'🚚 Confirmed',delivered:'✅ Delivered'};
+  return `<span class="badge ${map[s]||'badge-pending'}">${labels[s]||s}</span>`;
+}
+
+function trackerHTML(status){
+  const steps=['Ordered','Farmer Accepted','Shipped','Delivered'];
+  const doneCount = status==='pending'?1:status==='confirmed'?2:status==='shipped'?3:4;
+  let html='<div class="tracker">';
+  steps.forEach((s,i)=>{
+    const cls = i<doneCount?'done':i===doneCount?'active':'pending';
+    html+=`<div class="track-step"><div class="track-dot ${cls}">${i<doneCount?'✓':'·'}</div><div class="track-label">${s}</div></div>`;
+    if(i<steps.length-1) html+=`<div class="track-line ${i<doneCount-1?'done':'pending'}"></div>`;
+  });
+  return html+'</div>';
+}
+
+function orderCardHTML(o){
+  return `<div class="order-card">
+    <div class="order-header">
+      <div>
+        <span class="order-id">${o.id}</span>
+        <span style="font-size:11px;color:var(--gray);margin-left:8px">${o.date} ${o.time||''}</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        ${statusBadge(o.status)}
+        <span class="badge badge-paid">💳 Paid</span>
+      </div>
+    </div>
+    <div class="order-items-row">
+      ${(o.items||[]).map(i=>`<div class="item-chip"><img src="${i.img||''}" alt="${i.name}" onerror="this.style.display='none'"/><span>${i.name} ×${i.qty}</span></div>`).join('')}
+    </div>
+    ${trackerHTML(o.status)}
+    <div class="order-footer">
+      <span class="order-total">₹${o.total?.toLocaleString('en-IN')}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:11px;color:var(--gray)">via ${o.payMethod?.toUpperCase()||'UPI'}</span>
+        <span style="font-size:11px;color:var(--gray)">· Est: ${o.estDelivery||'—'}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderOrders(){
+  const orders = getOrders();
+  const empty = '<p style="color:var(--gray);font-size:13px;text-align:center;padding:30px">No orders yet. <a href="shop.html" style="color:var(--earth-light);font-weight:600">Start shopping →</a></p>';
+  const html = orders.length ? orders.map(orderCardHTML).join('') : empty;
+  const el1=document.getElementById('recentOrdersList'); if(el1) el1.innerHTML=orders.slice(0,3).map(orderCardHTML).join('')||empty;
+  const el2=document.getElementById('allOrdersList'); if(el2) el2.innerHTML=html;
+}
+
+// ── NOTIFICATIONS from order status changes ──
+function buildNotifs(){
+  const orders = getOrders();
+  const notifs=[];
+  orders.forEach(o=>{
+    if(o.status==='confirmed') notifs.push({color:'green',title:'Order Confirmed! 🎉',text:`Farmer accepted your order ${o.id} – ${o.items?.map(i=>i.name).join(', ')}`,time:o.date,new:true});
+    if(o.status==='delivered') notifs.push({color:'green',title:'Order Delivered! ✅',text:`Your order ${o.id} has been delivered. Enjoy your fresh produce!`,time:o.date,new:false});
+    notifs.push({color:'green',title:'Payment Confirmed 💳',text:`₹${o.total} paid successfully for order ${o.id} via ${o.payMethod?.toUpperCase()||'UPI'}`,time:o.date,new:false});
+  });
+  if(!notifs.length) notifs.push({color:'yellow',title:'Welcome to Agroverse!',text:'Start shopping for fresh farm produce.',time:'Today',new:false});
+  return notifs;
+}
+
+function notifHTML(n){
+  return `<div class="notif-item">
+    <div class="notif-dot ${n.new?'new':''}" style="${n.new?'':'background:'+(n.color==='green'?'var(--leaf)':n.color==='yellow'?'#E8A020':'var(--red)')}"></div>
+    <div><h4 style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:2px">${n.title}</h4><p style="font-size:11px;color:var(--gray)">${n.text}</p><p style="font-size:10px;color:#aaa;margin-top:2px">${n.time}</p></div>
+  </div>`;
+}
+
+function renderNotifs(){
+  const notifs = buildNotifs();
+  const html = notifs.map(notifHTML).join('');
+  const el1=document.getElementById('overviewNotifs'); if(el1) el1.innerHTML=html;
+  const el2=document.getElementById('allNotifsList'); if(el2) el2.innerHTML=html;
+  document.getElementById('notifBadge').textContent = notifs.filter(n=>n.new).length || notifs.length;
+}
+
+function showPanel(id, navEl){
+  document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(navEl){ document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); navEl.classList.add('active'); }
+  if(id==='orders') renderOrders();
+  if(id==='notifications') renderNotifs();
+}
+
+// ── LIVE POLLING: check for order status updates from farmer ──
+async function poll(){
+  await syncBackendOrders();
+  computeKPIs();
+  renderOrders();
+  renderNotifs();
+}
+poll();
+setInterval(poll, 3000); // poll every 3s
+</script>
+</body>
+</html>

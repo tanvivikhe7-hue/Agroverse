@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agroverse – India's Trusted Agri-Commerce Platform</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(160deg,#061610 0%,#1A3A2A 45%,#2A6049 100%);
+  padding: 80px 48px; position: relative; overflow: hidden; min-height: 540px;
+  display: flex; align-items: center;
+}
+.hero::before { content:''; position:absolute; top:-120px; right:-120px; width:520px; height:520px; background:radial-gradient(circle,rgba(82,183,136,.15),transparent 70%); pointer-events:none; }
+.hero-content { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; width: 100%; position: relative; z-index:1; }
+.hero-badge { display:inline-flex;align-items:center;gap:5px;background:rgba(82,183,136,.15);border:1px solid rgba(82,183,136,.3);color:#74C69D;padding:5px 14px;border-radius:28px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px; }
+.hero h1 { font-family:'Playfair Display',serif;font-size:56px;font-weight:900;color:#fff;line-height:1.07;margin-bottom:18px; }
+.hero h1 span { color:#74C69D; }
+.hero p { color:rgba(255,255,255,.72);font-size:16px;line-height:1.75;margin-bottom:30px;max-width:440px; }
+.hero-actions { display:flex;gap:12px;flex-wrap:wrap; }
+.hero-stats { display:flex;gap:32px;margin-top:38px; }
+.hstat .n { font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:#D1FAE5; }
+.hstat .l { font-size:12px;color:rgba(255,255,255,.55);margin-top:2px; }
+
+/* ── HERO VISUAL ── */
+.hero-visual { display:flex;flex-direction:column;gap:12px; }
+.glass { background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px;color:#fff; }
+.glass h4 { font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);margin-bottom:10px; }
+.mkt-row { display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);padding:8px 10px;border-radius:9px;margin-bottom:6px; }
+.mkt-row:last-child { margin-bottom:0; }
+.mkt-row img { width:30px;height:30px;border-radius:7px;object-fit:cover; }
+.mkt-row .nm { font-size:12px;font-weight:600;flex:1;padding:0 9px; }
+.mkt-row .pr { font-family:'Space Mono',monospace;font-size:12px;font-weight:700; }
+.chg-up { font-size:10px;padding:2px 8px;border-radius:18px;background:rgba(82,183,136,.2);color:#74C69D; }
+.chg-dn { font-size:10px;padding:2px 8px;border-radius:18px;background:rgba(217,79,61,.2);color:#f87666; }
+.weather-mini { display:flex;gap:8px; }
+.wd { flex:1;text-align:center;background:rgba(255,255,255,.06);border-radius:9px;padding:9px 5px; }
+.wd .d { font-size:10px;color:rgba(255,255,255,.45);margin-bottom:4px; }
+.wd .i { font-size:20px;margin-bottom:3px; }
+.wd .t { font-family:'Space Mono',monospace;font-size:11px;font-weight:700; }
+
+/* ── SECTION ── */
+.section { padding:56px 48px;max-width:1280px;margin:0 auto; }
+.section-hdr { display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px; }
+.section-hdr h2 { font-family:'Playfair Display',serif;font-size:34px;font-weight:800;color:var(--earth); }
+.section-hdr h2 span { color:var(--earth-light); }
+.section-hdr p { font-size:13px;color:var(--gray);margin-top:4px; }
+.view-all { color:var(--earth-light);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none; }
+.view-all:hover { text-decoration:underline; }
+
+/* ── PRODUCE MOSAIC BANNER ── */
+.mosaic-banner { display:grid;grid-template-columns:repeat(5,1fr);gap:4px;border-radius:18px;overflow:hidden;height:190px;margin:0 48px 40px;box-shadow:var(--shadow-lg); }
+.mb-cell { position:relative;overflow:hidden;cursor:pointer; }
+.mb-cell img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
+.mb-cell:hover img { transform:scale(1.1); }
+.mb-cell.wide { grid-column:span 2; }
+.mb-label { position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.62));color:#fff;font-size:12px;font-weight:700;padding:12px 10px 7px;text-align:center; }
+
+/* ── CATEGORIES ── */
+.cats-grid { display:grid;grid-template-columns:repeat(6,1fr);gap:14px; }
+.cat-card { text-align:center;cursor:pointer;transition:transform .2s;padding:10px 6px; }
+.cat-card:hover { transform:translateY(-6px); }
+.cat-icon { width:88px;height:88px;border-radius:50%;margin:0 auto 9px;overflow:hidden;border:3px solid var(--gray-light);transition:border-color .2s; }
+.cat-card:hover .cat-icon { border-color:var(--leaf); }
+.cat-icon img { width:100%;height:100%;object-fit:cover; }
+.cat-card p { font-size:11px;font-weight:600;color:var(--earth);line-height:1.4; }
+
+/* ── PRODUCTS GRID ── */
+.prod-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:14px; }
+.prod-card { background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 18px rgba(26,58,42,.09);transition:all .3s;position:relative;cursor:pointer; }
+.prod-card:hover { transform:translateY(-4px);box-shadow:0 10px 36px rgba(26,58,42,.15); }
+.prod-disc { position:absolute;top:10px;left:10px;background:var(--earth-light);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:18px;z-index:2; }
+.prod-wish { position:absolute;top:10px;right:10px;width:30px;height:30px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1);font-size:13px;transition:all .2s;z-index:2; }
+.prod-wish:hover { background:#ffe8e8;transform:scale(1.1); }
+.prod-img-wrap { height:148px;overflow:hidden;background:linear-gradient(135deg,#E6F5EC,#D8F0E4); }
+.prod-img-wrap img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
+.prod-card:hover .prod-img-wrap img { transform:scale(1.07); }
+.prod-info { padding:12px; }
+.prod-stars { display:flex;align-items:center;gap:3px;background:var(--earth);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:18px;width:fit-content;margin-bottom:7px; }
+.prod-name { font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.prod-brand { font-size:10px;color:var(--gray);margin-bottom:8px; }
+.prod-price { display:flex;align-items:center;gap:7px;margin-bottom:3px; }
+.price-now { font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--earth); }
+.price-was { font-size:11px;color:var(--gray);text-decoration:line-through; }
+.price-save { font-size:10px;color:var(--earth-light);font-weight:600; }
+.btn-buy { width:100%;margin-top:8px;background:var(--earth);color:#fff;border:none;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s; }
+.btn-buy:hover { background:var(--earth-mid); }
+
+/* ── PROMO BANNERS ── */
+.promo-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 48px 48px; }
+.promo { border-radius:16px;overflow:hidden;position:relative;height:140px;cursor:pointer; }
+.promo img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
+.promo:hover img { transform:scale(1.06); }
+.promo-overlay { position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,31,20,.85),rgba(10,31,20,.2));display:flex;align-items:center;padding:28px; }
+.promo-text h3 { font-family:'Playfair Display',serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:4px; }
+.promo-text p { font-size:12px;color:rgba(255,255,255,.8);margin-bottom:12px; }
+.promo-tag { display:inline-block;background:var(--leaf);color:#fff;padding:4px 14px;border-radius:18px;font-size:11px;font-weight:700; }
+
+/* ── TRUST BAR ── */
+.trust-bar { background:var(--earth);padding:24px 48px; }
+.trust-items { max-width:1180px;margin:0 auto;display:flex;justify-content:space-around;align-items:center; }
+.trust-item { display:flex;align-items:center;gap:13px;color:#fff; }
+.trust-icon { font-size:30px; }
+.trust-item h4 { font-size:13px;font-weight:700; }
+.trust-item p { font-size:11px;color:rgba(255,255,255,.6); }
+
+/* ── FOOTER ── */
+footer { background:#0F2419;color:rgba(255,255,255,.7);padding:52px 48px 0; }
+.footer-grid { max-width:1180px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px; }
+.footer-brand .nav-logo { margin-bottom:12px; }
+.footer-brand p { font-size:13px;line-height:1.7;max-width:280px;margin-bottom:18px; }
+.footer-col h4 { font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;margin-bottom:14px; }
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:8px; }
+.footer-col ul a { font-size:13px;color:rgba(255,255,255,.6);text-decoration:none;transition:color .2s;cursor:pointer; }
+.footer-col ul a:hover { color:#74C69D; }
+.footer-bottom { max-width:1180px;margin:40px auto 0;padding:20px 0;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;font-size:12px; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px) { .prod-grid { grid-template-columns:repeat(3,1fr); } .cats-grid { grid-template-columns:repeat(4,1fr); } }
+@media(max-width:768px) { .hero { padding:48px 22px; } .hero-content { grid-template-columns:1fr; } .hero h1 { font-size:36px; } .hero-visual { display:none; } .mosaic-banner { margin:0 18px 28px;height:130px; } .section { padding:36px 22px; } .prod-grid { grid-template-columns:repeat(2,1fr); } .cats-grid { grid-template-columns:repeat(3,1fr); } .promo-grid { grid-template-columns:1fr;margin:0 18px 28px; } .trust-items { flex-direction:column;gap:18px; } .footer-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div>
+      <div class="hero-badge">🌱 Trusted by 5 Lakh+ Farmers</div>
+      <h1>Grow Smarter,<br/>Farm <span>Better</span></h1>
+      <p>India's most trusted agri-commerce platform. Genuine seeds, fertilizers, pesticides — delivered to your doorstep at the best prices.</p>
+      <div class="hero-actions">
+        <a href="shop.html" class="btn btn-primary btn-hero">Shop Now →</a>
+        <a href="market.html" class="btn btn-ghost btn-hero">📊 Live Prices</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="n">50K+</div><div class="l">Products</div></div>
+        <div class="hstat"><div class="n">500+</div><div class="l">Brands</div></div>
+        <div class="hstat"><div class="n">5L+</div><div class="l">Farmers</div></div>
+        <div class="hstat"><div class="n">28</div><div class="l">States</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="glass">
+        <h4>📊 Today's Market Prices</h4>
+        <div class="mkt-row">
+          <img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=60&q=80" alt="Tomato"/>
+          <span class="nm">Tomato</span><span class="pr">₹42/kg</span>
+          <span class="chg-up">▲10%</span>
+        </div>
+        <div class="mkt-row">
+          <img src="https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=60&q=80" alt="Onion"/>
+          <span class="nm">Onion</span><span class="pr">₹28/kg</span>
+          <span class="chg-dn">▼12%</span>
+        </div>
+        <div class="mkt-row">
+          <img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=60&q=80" alt="Mango"/>
+          <span class="nm">Mango</span><span class="pr">₹280/dz</span>
+          <span class="chg-up">▲12%</span>
+        </div>
+      </div>
+      <div class="glass">
+        <h4>☀️ Weather – Lonavla, MH</h4>
+        <div class="weather-mini">
+          <div class="wd"><div class="d">Today</div><div class="i">🌤️</div><div class="t">28°C</div></div>
+          <div class="wd"><div class="d">Thu</div><div class="i">🌦️</div><div class="t">25°C</div></div>
+          <div class="wd"><div class="d">Fri</div><div class="i">🌧️</div><div class="t">22°C</div></div>
+          <div class="wd"><div class="d">Sat</div><div class="i">⛅</div><div class="t">26°C</div></div>
+          <div class="wd"><div class="d">Sun</div><div class="i">☀️</div><div class="t">30°C</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCE MOSAIC -->
+<div class="mosaic-banner">
+  <div class="mb-cell wide">
+    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&q=85" alt="Market"/>
+    <div class="mb-label">🌾 Fresh from Indian Farms</div>
+  </div>
+  <div class="mb-cell"><img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=300&q=85" alt="Tomato"/><div class="mb-label">🍅 Tomato</div></div>
+  <div class="mb-cell"><img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=300&q=85" alt="Mango"/><div class="mb-label">🥭 Mango</div></div>
+  <div class="mb-cell"><img src="https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&q=85" alt="Chilli"/><div class="mb-label">🌶️ Chilli</div></div>
+  <div class="mb-cell"><img src="https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=300&q=85" alt="Grapes"/><div class="mb-label">🍇 Grapes</div></div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section" style="padding-top:0">
+  <div class="section-hdr">
+    <div><h2>Shop by <span>Category</span></h2><p>Everything for your farm, in one place</p></div>
+    <a href="shop.html" class="view-all">View All →</a>
+  </div>
+  <div class="cats-grid">
+    <div class="cat-card" onclick="location.href='shop.html?cat=insecticides'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1599666433232-8414e3910088?w=120&q=80" alt="Insecticides" loading="lazy"/></div><p>Insecticides</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=fungicides'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=120&q=80" alt="Fungicides" loading="lazy"/></div><p>Fungicides</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=seeds'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=120&q=80" alt="Seeds" loading="lazy"/></div><p>Vegetable Seeds</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=nutrients'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=120&q=80" alt="Nutrients" loading="lazy"/></div><p>Nutrients</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=herbicides'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=120&q=80" alt="Herbicides" loading="lazy"/></div><p>Herbicides</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=machinery'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=120&q=80" alt="Machinery" loading="lazy"/></div><p>Farm Machinery</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=organic'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=120&q=80" alt="Organic" loading="lazy"/></div><p>Organic Farming</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=growth'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=120&q=80" alt="Growth" loading="lazy"/></div><p>Growth Promoters</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=flower'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1490750967868-88df5691cc26?w=120&q=80" alt="Flowers" loading="lazy"/></div><p>Flower Seeds</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=fruit'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=120&q=80" alt="Fruits" loading="lazy"/></div><p>Fruit Seeds</p></div>
+    <div class="cat-card" onclick="location.href='shop.html?cat=animal'"><div class="cat-icon"><img src="https://images.unsplash.com/photo-1585944672980-6d64c18f7875?w=120&q=80" alt="Animal" loading="lazy"/></div><p>Animal Husbandry</p></div>
+    <div class="cat-card" onclick="location.href='shop.html'"><div class="cat-icon" style="background:linear-gradient(135deg,#ffe8c0,#ffd080)"><img src="https://images.unsplash.com/photo-1607305387299-a3d9611cd469?w=120&q=80" alt="Offers" loading="lazy"/></div><p>Today's Offers</p></div>
+  </div>
+</div>
+
+<!-- TOP SELLING PRODUCTS -->
+<div class="section" style="background:#fff;padding:48px;max-width:none">
+  <div style="max-width:1280px;margin:0 auto">
+    <div class="section-hdr">
+      <div><h2>🔥 Top <span>Selling</span> Products</h2><p>Most trusted by farmers across India</p></div>
+      <a href="shop.html" class="view-all">View All →</a>
+    </div>
+    <div class="prod-grid" id="products-grid"></div>
+  </div>
+</div>
+
+<!-- PROMO BANNERS -->
+<div class="promo-grid">
+  <div class="promo" onclick="location.href='shop.html?cat=seeds'">
+    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=700&q=80" alt="Seeds Sale" loading="lazy"/>
+    <div class="promo-overlay">
+      <div class="promo-text"><h3>Kharif Season Sale</h3><p>Up to 40% off on top seeds</p><span class="promo-tag">Shop Seeds →</span></div>
+    </div>
+  </div>
+  <div class="promo" onclick="location.href='market.html'">
+    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=700&q=80" alt="Market" loading="lazy"/>
+    <div class="promo-overlay">
+      <div class="promo-text"><h3>Live APMC Prices</h3><p>Daily wholesale rates from Maharashtra</p><span class="promo-tag">View Prices →</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-items">
+    <div class="trust-item"><div class="trust-icon">🏷️</div><div><h4>100% Branded Products</h4><p>All products are genuine brand items</p></div></div>
+    <div class="trust-item"><div class="trust-icon">🚚</div><div><h4>Free Delivery</h4><p>On all orders above ₹499</p></div></div>
+    <div class="trust-item"><div class="trust-icon">🔄</div><div><h4>Easy Returns</h4><p>7-day hassle-free returns</p></div></div>
+    <div class="trust-item"><div class="trust-icon">🔒</div><div><h4>Secure Payments</h4><p>UPI, Cards, Net Banking & COD</p></div></div>
+    <div class="trust-item"><div class="trust-icon">📞</div><div><h4>Expert Support</h4><p>Agri experts available 24/7</p></div></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html" style="margin-bottom:12px;display:inline-flex">
+        <div class="logo-icon">🌾</div>
+        <span class="nav-logo-text">Agro<em>verse</em></span>
+      </a>
+      <p>India's most trusted agri-commerce platform. Connecting farmers with quality products, live market data, and expert agronomy advice.</p>
+    </div>
+    <div class="footer-col"><h4>Quick Links</h4><ul><li><a href="shop.html">Shop</a></li><li><a href="weather.html">Weather</a></li><li><a href="market.html">Market Prices</a></li><li><a href="farmer-dashboard.html">Sell on Agroverse</a></li></ul></div>
+    <div class="footer-col"><h4>Categories</h4><ul><li><a href="shop.html?cat=insecticides">Insecticides</a></li><li><a href="shop.html?cat=fungicides">Fungicides</a></li><li><a href="shop.html?cat=seeds">Seeds</a></li><li><a href="shop.html?cat=nutrients">Nutrients</a></li></ul></div>
+    <div class="footer-col"><h4>Support</h4><ul><li><a href="#">Agri Expert Chat</a></li><li><a href="#">Order Tracking</a></li><li><a href="#">Return Policy</a></li><li><a href="#">Contact Us</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><span>© 2026 Agroverse. All rights reserved.</span><span>Made with 💚 for Indian Farmers</span></div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+injectNav('home');
+
+const PRODUCTS = [
+  {id:1,name:'Coragen Insecticide',brand:'FMC',cat:'insecticides',price:129,mrp:220,r:4.4,rv:388,disc:41,img:'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=300&q=80'},
+  {id:2,name:'Syngenta Tomato Seeds',brand:'Syngenta',cat:'seeds',price:299,mrp:480,r:4.3,rv:207,disc:38,img:'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=300&q=80'},
+  {id:3,name:'Nativo 75WG Fungicide',brand:'Bayer',cat:'fungicides',price:129,mrp:180,r:4.4,rv:252,disc:28,img:'https://images.unsplash.com/photo-1599666433232-8414e3910088?w=300&q=80'},
+  {id:4,name:'Katyayani Humic+Fulvic',brand:'Katyayani',cat:'nutrients',price:760,mrp:1880,r:4.4,rv:470,disc:60,img:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&q=80'},
+  {id:5,name:'Sagar Watermelon Seeds',brand:'Sagar Seeds',cat:'seeds',price:310,mrp:462,r:4.2,rv:10,disc:33,img:'https://images.unsplash.com/photo-1587049697943-d8b6e6756e3e?w=300&q=80'},
+  {id:6,name:'Actara Thiamethoxam',brand:'Syngenta',cat:'insecticides',price:310,mrp:420,r:4.5,rv:300,disc:26,img:'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=300&q=80'},
+  {id:7,name:'Nunhems Chilli Seeds',brand:'Nunhems',cat:'seeds',price:250,mrp:340,r:4.5,rv:56,disc:26,img:'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&q=80'},
+  {id:8,name:'19:19:19 NPK Fertilizer',brand:'Chambal',cat:'nutrients',price:650,mrp:820,r:4.6,rv:560,disc:21,img:'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=300&q=80'},
+  {id:9,name:'VNR Brinjal Seeds',brand:'VNR Seeds',cat:'seeds',price:88,mrp:120,r:4.4,rv:4,disc:27,img:'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=300&q=80'},
+  {id:10,name:'Ridomil Gold MZ 68',brand:'Syngenta',cat:'fungicides',price:380,mrp:520,r:4.6,rv:320,disc:27,img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&q=80'},
+];
+
+function renderProds(list) {
+  return list.map(p=>`
+  <div class="prod-card">
+    <div class="prod-disc">${p.disc}% OFF</div>
+    <button class="prod-wish" onclick="event.stopPropagation();this.textContent='❤️';toast('Added to wishlist ❤️','success')">🤍</button>
+    <div class="prod-img-wrap"><img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'"/></div>
+    <div class="prod-info">
+      <div class="prod-stars">⭐ ${p.r} (${p.rv})</div>
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-brand">${p.brand}</div>
+      <div class="prod-price"><span class="price-now">₹${p.price}</span><span class="price-was">₹${p.mrp}</span></div>
+      <div class="price-save">💰 Save ₹${p.mrp-p.price}</div>
+      <button class="btn-buy" onclick="addToCart('${p.name}', ${p.id}, ${p.price}, '${p.brand}', '${p.img}')">Add to Cart 🛒</button>
+    </div>
+  </div>`).join('');
+}
+
+document.getElementById('products-grid').innerHTML = renderProds(PRODUCTS);
+
+function addToCart(name, id, price, brand, img) {
+  const cart = JSON.parse(localStorage.getItem('av_cart') || '[]');
+  const prodId = id || (PRODUCTS.find(p => p.name === name)?.id) || Date.now();
+  const existing = cart.find(c => c.id === prodId || c.name === name);
+  if (existing) {
+    existing.qty++;
+  } else {
+    const prod = PRODUCTS.find(p => p.name === name) || {};
+    cart.push({
+      id: prodId,
+      name: name,
+      price: price || prod.price || 199,
+      mrp: prod.mrp || (price ? price * 1.3 : 299),
+      brand: brand || prod.brand || 'Agroverse',
+      img: img || prod.img || '',
+      qty: 1
+    });
+  }
+  localStorage.setItem('av_cart', JSON.stringify(cart));
+  if (typeof updateCartCount === 'function') updateCartCount();
+  toast(`🛒 "${name}" added to cart!`, 'success');
+}
+</script>
+</body>
+</html>

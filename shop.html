@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agroverse – Shop</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.page-hero{background:linear-gradient(160deg,#061610,#1A3A2A 60%,#2A6049);padding:36px 48px;position:relative;overflow:hidden;}
+.page-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(82,183,136,.14),transparent 70%);pointer-events:none;}
+.page-hero h1{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:#fff;margin-bottom:6px;}
+.page-hero p{color:rgba(255,255,255,.65);font-size:14px;}
+.breadcrumb{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;}
+.breadcrumb a{color:rgba(255,255,255,.65);text-decoration:none;}
+.shop-wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:240px 1fr;gap:24px;padding:32px 48px;}
+.filter-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.filter-card h3{font-family:'Playfair Display',serif;font-size:14px;color:var(--earth);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--gray-light);}
+.filter-opt{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;}
+.filter-opt input[type=checkbox]{accent-color:var(--earth);width:15px;height:15px;}
+.filter-opt label{font-size:12px;color:#3D3D3D;cursor:pointer;flex:1;}
+.price-range{width:100%;accent-color:var(--earth);margin:8px 0;}
+.range-label{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-top:4px;}
+.apply-btn{width:100%;background:var(--earth);color:#fff;border:none;border-radius:9px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;}
+.category-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.pill{padding:7px 16px;border-radius:28px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid var(--gray-light);background:#fff;color:var(--dark);}
+.pill.active,.pill:hover{background:var(--earth);color:#fff;border-color:var(--earth);}
+.prod-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.prod-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 18px rgba(26,58,42,.09);transition:all .3s;position:relative;}
+.prod-card:hover{transform:translateY(-4px);box-shadow:0 10px 36px rgba(26,58,42,.15);}
+.prod-disc{position:absolute;top:10px;left:10px;background:var(--earth-light);color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:18px;z-index:2;}
+.prod-img-wrap{height:148px;overflow:hidden;background:linear-gradient(135deg,#E6F5EC,#D8F0E4);}
+.prod-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+.prod-card:hover .prod-img-wrap img{transform:scale(1.07);}
+.prod-info{padding:12px;}
+.prod-stars{display:flex;align-items:center;gap:3px;background:var(--earth);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:18px;width:fit-content;margin-bottom:7px;}
+.prod-name{font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;line-height:1.4;}
+.prod-brand{font-size:10px;color:var(--gray);margin-bottom:8px;}
+.price-now{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--earth);}
+.price-was{font-size:11px;color:var(--gray);text-decoration:line-through;margin-left:6px;}
+.btn-buy{width:100%;margin-top:8px;background:var(--earth);color:#fff;border:none;border-radius:7px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-buy:hover{background:var(--earth-mid);}
+/* CART DRAWER */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:none;backdrop-filter:blur(4px);}
+.cart-overlay.open{display:block;}
+.cart-drawer{position:fixed;right:0;top:0;bottom:0;width:400px;background:#fff;z-index:2001;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;}
+.cart-drawer.open{transform:translateX(0);}
+.cart-head{padding:20px 22px;border-bottom:1px solid var(--gray-light);display:flex;justify-content:space-between;align-items:center;}
+.cart-head h3{font-family:'Playfair Display',serif;font-size:20px;color:var(--earth);}
+.cart-close{background:none;border:none;font-size:22px;cursor:pointer;}
+.cart-body{flex:1;overflow-y:auto;padding:16px 22px;}
+.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-light);}
+.cart-item img{width:60px;height:60px;object-fit:cover;border-radius:9px;}
+.cart-item-info{flex:1;}
+.cart-item-info h4{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:3px;}
+.cart-item-info p{font-size:11px;color:var(--gray);}
+.qty-ctrl{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.qty-ctrl button{width:26px;height:26px;border:1.5px solid var(--gray-light);border-radius:7px;background:#fff;cursor:pointer;font-weight:700;font-size:14px;transition:all .2s;}
+.qty-ctrl button:hover{border-color:var(--earth);color:var(--earth);}
+.cart-remove{background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;align-self:flex-start;}
+.cart-foot{padding:20px 22px;border-top:1px solid var(--gray-light);}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;}
+.cart-grand{font-weight:700;font-size:17px;color:var(--earth);}
+.checkout-btn{width:100%;background:linear-gradient(135deg,var(--earth),var(--earth-mid));color:#fff;border:none;border-radius:12px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;margin-top:12px;}
+.checkout-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,58,42,.3);}
+.empty-cart{text-align:center;padding:60px 20px;color:var(--gray);}
+.empty-cart .icon{font-size:48px;margin-bottom:12px;}
+@media(max-width:768px){.shop-wrap{grid-template-columns:1fr;padding:20px 16px;}.filter-sidebar{display:none;}.prod-grid-4{grid-template-columns:repeat(2,1fr);}.cart-drawer{width:100%;}}
+</style>
+</head>
+<body>
+<div id="nav-root"></div>
+<div class="page-hero">
+  <div class="breadcrumb"><a href="index.html">Home</a> › Shop</div>
+  <h1>🌿 Agri Products Shop</h1>
+  <p>Fresh from farm to your doorstep</p>
+</div>
+<div class="shop-wrap">
+  <aside class="filter-sidebar">
+    <div class="filter-card">
+      <h3>🏷️ Categories</h3>
+      <div class="filter-opt"><input type="checkbox" id="c-all" checked onchange="toggleAll(this)"/><label for="c-all">All Categories</label></div>
+      <div class="filter-opt"><input type="checkbox" class="cat-cb" value="fruits" onchange="applyFilters()"/><label>Fruits</label></div>
+      <div class="filter-opt"><input type="checkbox" class="cat-cb" value="vegetables" onchange="applyFilters()"/><label>Vegetables</label></div>
+      <div class="filter-opt"><input type="checkbox" class="cat-cb" value="grains" onchange="applyFilters()"/><label>Grains</label></div>
+      <div class="filter-opt"><input type="checkbox" class="cat-cb" value="spices" onchange="applyFilters()"/><label>Spices</label></div>
+    </div>
+    <div class="filter-card">
+      <h3>💰 Price Range</h3>
+      <input type="range" class="price-range" id="priceRange" min="0" max="1000" value="1000" step="10" oninput="document.getElementById('priceLabel').textContent='₹'+this.value"/>
+      <div class="range-label"><span>₹0</span><span id="priceLabel">₹1000</span></div>
+      <button class="apply-btn" onclick="applyFilters()">Apply</button>
+    </div>
+  </aside>
+  <main>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--earth)">All Products <span id="count-badge" style="font-size:14px;color:var(--gray);font-family:'DM Sans',sans-serif;font-weight:400"></span></h2>
+    </div>
+    <div class="category-pills" id="pills"></div>
+    <div class="prod-grid-4" id="product-grid"></div>
+  </main>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h3>🛒 Your Cart</h3>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-foot">
+    <div class="cart-total-row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+    <div class="cart-total-row"><span>Delivery</span><span style="color:var(--earth-light);font-weight:600">₹49</span></div>
+    <div class="cart-total-row cart-grand"><span>Total</span><span id="cartTotal">₹0</span></div>
+    <button class="checkout-btn" onclick="goCheckout()">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('shop');
+document.querySelector('.nav-right .btn-ghost').onclick = openCart;
+
+let PRODUCTS = [];
+let cart = JSON.parse(localStorage.getItem('av_cart')||'[]');
+let activeCat = 'All';
+let maxPrice = 1000;
+
+async function loadProducts() {
+  try {
+    PRODUCTS = await apiFetch('/products');
+    applyFilters();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// Pills
+const CATS = ['All','fruits','vegetables','grains','spices','insecticides','seeds','fungicides','nutrients'];
+document.getElementById('pills').innerHTML = CATS.map(c=>`<div class="pill ${c==='All'?'active':''}" onclick="setCat('${c}',this)">${c==='All'?'All Products':c.charAt(0).toUpperCase()+c.slice(1)}</div>`).join('');
+
+function setCat(c, el) {
+  activeCat = c;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+function toggleAll(cb) { document.querySelectorAll('.cat-cb').forEach(c=>c.checked=false); applyFilters(); }
+function updatePriceLabel(v) { document.getElementById('priceLabel').textContent='₹'+v; }
+
+function applyFilters() {
+  maxPrice = parseInt(document.getElementById('priceRange').value);
+  const checkedCats = [...document.querySelectorAll('.cat-cb:checked')].map(c=>c.value);
+  
+  let filtered = PRODUCTS.filter(p=>{
+    if(activeCat!=='All' && p.category.toLowerCase()!==activeCat.toLowerCase()) return false;
+    if(checkedCats.length && !checkedCats.includes(p.category.toLowerCase())) return false;
+    if(p.price > maxPrice) return false;
+    return true;
+  });
+  
+  document.getElementById('count-badge').textContent=`(${filtered.length})`;
+  document.getElementById('product-grid').innerHTML = filtered.map(p=>{
+    const outOfStock = p.stock <= 0;
+    const lowStock = p.stock > 0 && p.stock <= 10;
+    const stockColor = outOfStock ? '#c0392b' : lowStock ? '#E8A020' : '#1A7A48';
+    const stockBg = outOfStock ? '#fde8e8' : lowStock ? '#fff8e0' : '#D4F0E2';
+    return `
+    <div class="prod-card" style="${outOfStock?'opacity:.6':''}">
+      <div class="prod-disc">${p.mrp ? Math.round((1 - p.price/p.mrp)*100) : 0}% OFF</div>
+      <div class="prod-img-wrap"><img src="${p.img || 'https://via.placeholder.com/300'}" alt="${p.name}" loading="lazy"/></div>
+      <div class="prod-info">
+        <div class="prod-stars">⭐ 4.5</div>
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-brand">${p.brand || 'Generic'}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin:4px 0 6px">
+          <span style="background:${stockBg};color:${stockColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:9px">
+            ${outOfStock ? '❌ Out of Stock' : lowStock ? `⚠️ Only ${p.stock} left` : `✅ ${p.stock} ${p.unit} available`}
+          </span>
+        </div>
+        <span class="price-now">₹${p.price}</span>${p.mrp ? `<span class="price-was">₹${p.mrp}</span>` : ''}/<span style="font-size:11px;color:var(--gray)">${p.unit}</span>
+        <button class="btn-buy" onclick="addToCart(${p.id})" ${outOfStock?'disabled':''}>
+          ${outOfStock ? '❌ Out of Stock' : '🛒 Add to Cart'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveCart() { localStorage.setItem('av_cart', JSON.stringify(cart)); updateCartBadge(); updateCartCount(); }
+function updateCartBadge() {
+  const total = cart.reduce((s,c)=>s+c.qty,0);
+  const el = document.querySelector('.nav-right .btn-ghost #cartCount');
+  if (el) el.textContent = total;
+}
+
+function addToCart(id) {
+  const p = PRODUCTS.find(x=>x.id===id);
+  const ex = cart.find(c=>c.id===id);
+  if(ex) ex.qty++;
+  else cart.push({...p, qty:1});
+  saveCart();
+  toast(`🛒 ${p.name} added to cart!`,'success');
+  openCart();
+}
+
+function openCart() {
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+  renderCart();
+}
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+}
+
+function renderCart() {
+  const body = document.getElementById('cartBody');
+  if(!cart.length){ body.innerHTML=`<div class="empty-cart"><div class="icon">🛒</div><p>Your cart is empty</p></div>`; updateCartTotals(); return; }
+  body.innerHTML = cart.map((item,i)=>`
+    <div class="cart-item">
+      <img src="${item.img || ''}" alt="${item.name}"/>
+      <div class="cart-item-info">
+        <h4>${item.name}</h4>
+        <div class="qty-ctrl">
+          <button onclick="changeQty(${i},-1)">−</button>
+          <span>${item.qty}</span>
+          <button onclick="changeQty(${i},1)">+</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--earth)">₹${item.price*item.qty}</div>
+        <button class="cart-remove" onclick="removeFromCart(${i})">🗑️</button>
+      </div>
+    </div>`).join('');
+  updateCartTotals();
+}
+
+function changeQty(i,d){ cart[i].qty+=d; if(cart[i].qty<1) cart.splice(i,1); saveCart(); renderCart(); }
+function removeFromCart(i){ cart.splice(i,1); saveCart(); renderCart(); }
+function updateCartTotals(){
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  document.getElementById('subtotal').textContent='₹'+sub;
+  document.getElementById('cartTotal').textContent='₹'+(sub+49);
+}
+
+function goCheckout(){
+  if(!cart.length) return toast('Your cart is empty!','error');
+  window.location.href='checkout.html';
+}
+
+loadProducts();
+updateCartBadge();
+</script>
+</body>
+</html>

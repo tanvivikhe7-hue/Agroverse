@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agroverse – Market Prices</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+.mkt-hero { background:linear-gradient(160deg,#061610,#1A3A2A 55%,#2A6049);padding:36px 48px;position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center; }
+.mkt-hero::before { content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=1400&q=40') center/cover;opacity:.08; }
+.mkt-hero-text { position:relative;z-index:1; }
+.mkt-hero h1 { font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:#fff;margin-bottom:6px; }
+.mkt-hero p { color:rgba(255,255,255,.65);font-size:14px; }
+.mkt-hero-right { position:relative;z-index:1;text-align:right; }
+.live-time { font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:#95D5B2; }
+.live-dot { display:inline-block;width:8px;height:8px;background:#52B788;border-radius:50%;margin-right:6px;animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:.5} }
+
+/* ── PRODUCE STRIP ── */
+.produce-strip { display:grid;grid-template-columns:repeat(6,1fr);gap:3px;height:110px;overflow:hidden;margin:0 48px;border-radius:14px;box-shadow:var(--shadow-lg); }
+.ps-cell { position:relative;overflow:hidden;cursor:pointer; }
+.ps-cell img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
+.ps-cell:hover img { transform:scale(1.1); }
+.ps-label { position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.65));color:#fff;font-size:10px;font-weight:700;padding:8px 6px 5px;text-align:center; }
+
+/* ── SUMMARY CARDS ── */
+.summary-cards { display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:22px 48px; }
+.sum-card { background:#fff;border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .25s; }
+.sum-card:hover { transform:translateY(-3px);box-shadow:var(--shadow-lg); }
+.sum-card img { width:52px;height:52px;border-radius:10px;object-fit:cover; }
+.sum-val { font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--earth); }
+.sum-lbl { font-size:11px;color:var(--gray);margin-bottom:4px; }
+
+/* ── MAIN LAYOUT ── */
+.mkt-layout { display:grid;grid-template-columns:1fr 300px;gap:20px;padding:0 48px 48px;max-width:1400px;margin:0 auto; }
+.mkt-card { background:#fff;border-radius:16px;padding:22px;box-shadow:var(--shadow); }
+.mkt-card + .mkt-card { margin-top:16px; }
+
+/* ── TABS ── */
+.mkt-tabs { display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--gray-light); }
+.mkt-tab { padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif; }
+.mkt-tab.active { color:var(--earth);border-bottom-color:var(--earth); }
+
+/* ── TABLE ── */
+.mkt-table { width:100%;border-collapse:collapse;font-size:13px; }
+.mkt-table thead th { text-align:left;padding:9px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);border-bottom:2px solid var(--gray-light); }
+.mkt-table tbody tr { border-bottom:1px solid #f0f4ee;transition:background .15s; }
+.mkt-table tbody tr:hover { background:#f8fdf9; }
+.mkt-table td { padding:10px 10px;vertical-align:middle; }
+.mkt-thumb { width:36px;height:36px;border-radius:8px;object-fit:cover; }
+.price-up { color:#1A7A48;font-weight:700; }
+.price-dn { color:#c0392b;font-weight:700; }
+
+/* ── SEARCH ── */
+.mkt-search { display:flex;align-items:center;gap:8px;background:#f0f4ee;border-radius:28px;padding:8px 16px;margin-bottom:14px; }
+.mkt-search input { background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dark);flex:1; }
+
+/* ── MOVERS SIDEBAR ── */
+.mover-item { display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f4ee; }
+.mover-item:last-child { border-bottom:none; }
+.mover-img { width:38px;height:38px;border-radius:9px;object-fit:cover; }
+.mover-name { flex:1;font-size:13px;font-weight:600; }
+.mover-price { font-family:'Space Mono',monospace;font-size:12px;font-weight:700; }
+
+/* ── CHART ── */
+.chart-wrap { margin-top:22px; }
+.chart-wrap h3 { font-family:'Playfair Display',serif;font-size:17px;color:var(--earth);margin-bottom:14px; }
+
+@media(max-width:1024px) { .mkt-layout { grid-template-columns:1fr; } .summary-cards { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:768px) { .mkt-hero { flex-direction:column;gap:16px;padding:28px 22px; } .produce-strip { margin:0 16px;height:80px;grid-template-columns:repeat(3,1fr); } .summary-cards { grid-template-columns:1fr 1fr;padding:14px 16px; } .mkt-layout { padding:0 16px 36px; } }
+</style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<!-- HERO -->
+<div class="mkt-hero">
+  <div class="mkt-hero-text">
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px"><a href="index.html" style="color:rgba(255,255,255,.5);text-decoration:none">Home</a> › Market Prices</div>
+    <h1>📊 Live APMC Market Prices</h1>
+    <p>Daily wholesale rates across Maharashtra · Updated every morning at 8:00 AM</p>
+  </div>
+  <div class="mkt-hero-right">
+    <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:4px"><span class="live-dot"></span>LIVE</div>
+    <div class="live-time" id="liveTime">--:--:--</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">Source: Agmarknet / APMC</div>
+  </div>
+</div>
+
+<!-- PRODUCE STRIP -->
+<div class="produce-strip" style="margin-top:24px">
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=400&q=80" alt="Tomato"/><div class="ps-label">🍅 Tomato</div></div>
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=400&q=80" alt="Onion"/><div class="ps-label">🧅 Onion</div></div>
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=400&q=80" alt="Mango"/><div class="ps-label">🥭 Mango</div></div>
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400&q=80" alt="Chilli"/><div class="ps-label">🌶️ Chilli</div></div>
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=400&q=80" alt="Grapes"/><div class="ps-label">🍇 Grapes</div></div>
+  <div class="ps-cell"><img src="https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=400&q=80" alt="Garlic"/><div class="ps-label">🧄 Garlic</div></div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-cards">
+  <div class="sum-card"><img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=80&q=80" alt="Tomato"/><div><div class="sum-lbl">Tomato · Pune APMC</div><div class="sum-val">₹42/kg</div><span class="badge-up">▲ +₹4</span></div></div>
+  <div class="sum-card"><img src="https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=80&q=80" alt="Onion"/><div><div class="sum-lbl">Onion · Nashik APMC</div><div class="sum-val">₹28/kg</div><span class="badge-dn">▼ -₹4</span></div></div>
+  <div class="sum-card"><img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=80&q=80" alt="Jowar"/><div><div class="sum-lbl">Jowar · Solapur APMC</div><div class="sum-val">₹2350/qtl</div><span class="badge-up">▲ +₹150</span></div></div>
+  <div class="sum-card"><img src="https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=80&q=80" alt="Chilli"/><div><div class="sum-lbl">Chilli · Kolhapur APMC</div><div class="sum-val">₹9500/qtl</div><span class="badge-up">▲ +₹500</span></div></div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="mkt-layout">
+  <div>
+    <div class="mkt-card">
+      <div class="mkt-tabs" id="mktTabs">
+        <button class="mkt-tab active" data-cat="vegetables">🥦 Vegetables</button>
+        <button class="mkt-tab" data-cat="fruits">🍎 Fruits</button>
+        <button class="mkt-tab" data-cat="millets">🌾 Millets & Grains</button>
+        <button class="mkt-tab" data-cat="spices">🌶️ Spices</button>
+      </div>
+      <div class="mkt-search">
+        <span>🔍</span>
+        <input type="text" id="mktSearch" placeholder="Search commodity…" oninput="filterTable()"/>
+      </div>
+      <table class="mkt-table">
+        <thead><tr><th>Commodity</th><th>Today's Price</th><th>Change %</th><th>Yesterday</th><th>Market</th><th>Difference</th></tr></thead>
+        <tbody id="marketTbody"></tbody>
+      </table>
+      <div class="chart-wrap">
+        <h3>Price Comparison Chart</h3>
+        <canvas id="marketChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div>
+    <div class="mkt-card">
+      <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--earth);margin-bottom:14px">🔥 Top Movers</h3>
+      <div id="topMovers"></div>
+    </div>
+    <div class="mkt-card" style="margin-top:16px">
+      <h3 style="font-family:'Playfair Display',serif;font-size:17px;color:var(--earth);margin-bottom:14px">📈 Weekly Trend</h3>
+      <canvas id="weeklyChart" height="160"></canvas>
+    </div>
+    <div class="mkt-card" style="margin-top:16px;background:linear-gradient(135deg,var(--earth),var(--earth-mid));color:#fff">
+      <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:#D1FAE5;margin-bottom:8px">🔔 Price Alerts</h3>
+      <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">Get notified when prices hit your target</p>
+      <div style="display:flex;gap:6px">
+        <input type="text" placeholder="e.g. Tomato below ₹30" style="flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;outline:none"/>
+        <button onclick="setPriceAlert()" style="background:#D1FAE5;color:var(--earth);border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:12px">Set</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('market');
+
+// ── LIVE CLOCK ──
+function tick() {
+  document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('en-IN');
+}
+tick(); setInterval(tick,1000);
+
+// ── DATA ──
+const MARKET_DATA = {
+  vegetables:[
+    {name:'Tomato',img:'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=60&q=80',unit:'kg',price:42,prev:38,mkt:'Pune APMC'},
+    {name:'Onion',img:'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=60&q=80',unit:'kg',price:28,prev:32,mkt:'Nashik APMC'},
+    {name:'Potato',img:'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=60&q=80',unit:'kg',price:22,prev:20,mkt:'Pune APMC'},
+    {name:'Cabbage',img:'https://images.unsplash.com/photo-1550747528-cdb45925b3f7?w=60&q=80',unit:'kg',price:18,prev:18,mkt:'Mumbai'},
+    {name:'Cauliflower',img:'https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=60&q=80',unit:'kg',price:35,prev:30,mkt:'Pune APMC'},
+    {name:'Brinjal',img:'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=60&q=80',unit:'kg',price:30,prev:35,mkt:'Pune APMC'},
+    {name:'Capsicum',img:'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=60&q=80',unit:'kg',price:60,prev:55,mkt:'Mumbai'},
+    {name:'Bitter Gourd',img:'https://images.unsplash.com/photo-1607305387299-a3d9611cd469?w=60&q=80',unit:'kg',price:50,prev:48,mkt:'Nashik APMC'},
+  ],
+  fruits:[
+    {name:'Mango (Alphonso)',img:'https://images.unsplash.com/photo-1553279768-865429fa0078?w=60&q=80',unit:'dozen',price:280,prev:250,mkt:'Ratnagiri'},
+    {name:'Banana',img:'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=60&q=80',unit:'dozen',price:48,prev:45,mkt:'Jalgaon APMC'},
+    {name:'Pomegranate',img:'https://images.unsplash.com/photo-1546548970-71785318a17b?w=60&q=80',unit:'kg',price:90,prev:85,mkt:'Solapur APMC'},
+    {name:'Grapes',img:'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=60&q=80',unit:'kg',price:65,prev:70,mkt:'Nashik APMC'},
+    {name:'Watermelon',img:'https://images.unsplash.com/photo-1587049697943-d8b6e6756e3e?w=60&q=80',unit:'kg',price:25,prev:20,mkt:'Pune APMC'},
+    {name:'Papaya',img:'https://images.unsplash.com/photo-1526318472351-c75fcf070305?w=60&q=80',unit:'kg',price:30,prev:28,mkt:'Pune APMC'},
+    {name:'Guava',img:'https://images.unsplash.com/photo-1536511132770-e5058c7e8c46?w=60&q=80',unit:'kg',price:40,prev:42,mkt:'Mumbai'},
+  ],
+  millets:[
+    {name:'Jowar',img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&q=80',unit:'quintal',price:2350,prev:2200,mkt:'Solapur APMC'},
+    {name:'Bajra',img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&q=80',unit:'quintal',price:2100,prev:2000,mkt:'Pune APMC'},
+    {name:'Ragi',img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&q=80',unit:'quintal',price:3200,prev:3000,mkt:'Pune APMC'},
+    {name:'Maize',img:'https://images.unsplash.com/photo-1601593346740-925612772716?w=60&q=80',unit:'quintal',price:1850,prev:1900,mkt:'Nashik APMC'},
+    {name:'Wheat',img:'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&q=80',unit:'quintal',price:2100,prev:2050,mkt:'Mumbai'},
+    {name:'Rice',img:'https://images.unsplash.com/photo-1536304993881-ff86e0c9b785?w=60&q=80',unit:'quintal',price:2800,prev:2750,mkt:'Raigad APMC'},
+  ],
+  spices:[
+    {name:'Turmeric',img:'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?w=60&q=80',unit:'quintal',price:7200,prev:6800,mkt:'Sangli APMC'},
+    {name:'Chilli (Red)',img:'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=60&q=80',unit:'quintal',price:9500,prev:9000,mkt:'Kolhapur'},
+    {name:'Coriander Seeds',img:'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=60&q=80',unit:'quintal',price:5800,prev:5500,mkt:'Pune APMC'},
+    {name:'Ginger',img:'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=60&q=80',unit:'kg',price:48,prev:52,mkt:'Kolhapur APMC'},
+    {name:'Garlic',img:'https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=60&q=80',unit:'kg',price:80,prev:75,mkt:'Nashik APMC'},
+  ]
+};
+
+let currentCat = 'vegetables';
+let mktChartInst = null;
+
+function renderMarket(cat) {
+  currentCat = cat;
+  const items = MARKET_DATA[cat] || [];
+  renderTable(items);
+  renderCompChart(items);
+  renderTopMovers();
+}
+
+function renderTable(items) {
+  document.getElementById('marketTbody').innerHTML = items.map(it=>{
+    const diff = it.price-it.prev;
+    const pct = ((diff/it.prev)*100).toFixed(1);
+    const up = diff >= 0;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:9px;"><img src="${it.img}" class="mkt-thumb" alt="${it.name}" loading="lazy" onerror="this.style.display='none'"/><span style="font-weight:600">${it.name}</span></div></td>
+      <td><strong>₹${it.price}/${it.unit}</strong></td>
+      <td class="${up?'price-up':'price-dn'}">${up?'▲':'▼'} ${Math.abs(pct)}%</td>
+      <td>₹${it.prev}</td>
+      <td>${it.mkt}</td>
+      <td><span class="${up?'badge-up':'badge-dn'}">${up?'+':''}₹${diff}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable() {
+  const q = document.getElementById('mktSearch').value.toLowerCase();
+  const items = MARKET_DATA[currentCat].filter(it=>it.name.toLowerCase().includes(q));
+  renderTable(items);
+}
+
+function renderCompChart(items) {
+  if(mktChartInst) mktChartInst.destroy();
+  const ctx = document.getElementById('marketChart').getContext('2d');
+  mktChartInst = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:items.map(i=>i.name),
+      datasets:[
+        {label:'Today (₹)',data:items.map(i=>i.price),backgroundColor:'rgba(52,183,136,0.7)',borderColor:'#52B788',borderWidth:1.5,borderRadius:5},
+        {label:'Yesterday (₹)',data:items.map(i=>i.prev),backgroundColor:'rgba(149,213,178,0.5)',borderColor:'#95D5B2',borderWidth:1.5,borderRadius:5}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:false,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Space Mono',size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+
+function renderTopMovers() {
+  const all = Object.values(MARKET_DATA).flat();
+  const sorted = all.map(i=>({...i,diff:i.price-i.prev,pct:((i.price-i.prev)/i.prev*100)})).sort((a,b)=>Math.abs(b.pct)-Math.abs(a.pct)).slice(0,6);
+  document.getElementById('topMovers').innerHTML = sorted.map(it=>`
+    <div class="mover-item">
+      <img src="${it.img}" class="mover-img" alt="${it.name}" loading="lazy" onerror="this.style.display='none'"/>
+      <span class="mover-name">${it.name}</span>
+      <span class="mover-price">₹${it.price}</span>
+      <span class="${it.diff>=0?'badge-up':'badge-dn'}">${it.diff>=0?'▲':'▼'}${Math.abs(it.pct).toFixed(1)}%</span>
+    </div>`).join('');
+}
+
+// Weekly trend chart
+const weekCtx = document.getElementById('weeklyChart').getContext('2d');
+new Chart(weekCtx, {
+  type:'line',
+  data:{
+    labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets:[
+      {label:'Tomato (₹/kg)',data:[38,40,39,42,41,43,42],borderColor:'#52B788',backgroundColor:'rgba(52,183,136,.1)',tension:.4,borderWidth:2,fill:true},
+      {label:'Onion (₹/kg)',data:[32,31,30,28,29,27,28],borderColor:'#95D5B2',backgroundColor:'rgba(149,213,178,.08)',tension:.4,borderWidth:2,fill:true}
+    ]
+  },
+  options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:10}}}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+});
+
+// ── TABS ──
+document.querySelectorAll('.mkt-tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.mkt-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    renderMarket(tab.dataset.cat);
+  };
+});
+
+function setPriceAlert() {
+  toast('🔔 Price alert set! You\'ll be notified via SMS.','success');
+}
+
+// ── SIMULATE LIVE PRICE UPDATES ──
+setInterval(()=>{
+  const items = MARKET_DATA[currentCat];
+  items.forEach(it=>{
+    const delta = (Math.random()-.48)*2;
+    it.prev = it.price;
+    it.price = Math.max(1, +(it.price + delta).toFixed(0));
+  });
+  renderTable(items);
+}, 8000);
+
+renderMarket('vegetables');
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agroverse – Weather Forecast</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+.weather-hero {
+  background:linear-gradient(160deg,#061610,#1A3A2A 55%,#2A6049);
+  padding:40px 48px; position:relative; overflow:hidden;
+}
+.weather-hero::before { content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400&q=30') center/cover;opacity:.1; }
+.weather-hero-inner { position:relative;z-index:1;max-width:900px;margin:0 auto;display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center; }
+.temp-circle { width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.1);border:3px solid rgba(255,255,255,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(10px);flex-shrink:0; }
+.temp-main { font-family:'Space Mono',monospace;font-size:56px;font-weight:700;color:#95D5B2;line-height:1; }
+.temp-feel { font-size:12px;color:rgba(255,255,255,.55);margin-top:4px; }
+.weather-info h2 { font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#fff;margin-bottom:4px; }
+.weather-info p { color:rgba(255,255,255,.65);font-size:14px;margin-bottom:18px; }
+.w-stats { display:flex;gap:24px;flex-wrap:wrap; }
+.wstat { background:rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;text-align:center;border:1px solid rgba(255,255,255,.1); }
+.wstat .v { font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#D1FAE5; }
+.wstat .l { font-size:10px;color:rgba(255,255,255,.5);margin-top:2px; }
+
+/* ── LOCATION SEARCH ── */
+.loc-bar { display:flex;gap:8px;background:rgba(255,255,255,.1);border-radius:28px;padding:6px 16px 6px 6px;border:1px solid rgba(255,255,255,.2);width:fit-content;margin-bottom:16px; }
+.loc-bar input { background:none;border:none;outline:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;width:220px; }
+.loc-bar input::placeholder { color:rgba(255,255,255,.4); }
+.loc-btn { background:var(--leaf);color:#fff;border:none;border-radius:22px;padding:6px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer; }
+
+/* ── CONTENT ── */
+.weather-content { max-width:1100px;margin:0 auto;padding:28px 48px 48px; }
+
+/* ── FORECAST CARDS ── */
+.forecast-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:28px; }
+.forecast-card { background:#fff;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:all .25s; }
+.forecast-card:hover,.forecast-card.active { transform:translateY(-4px);box-shadow:var(--shadow-lg);border:1.5px solid var(--leaf); }
+.forecast-card .day { font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px; }
+.forecast-card .icon { font-size:28px;margin:8px 0; }
+.forecast-card .temp-hi { font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--earth); }
+.forecast-card .temp-lo { font-size:11px;color:var(--gray); }
+.forecast-card .rain { font-size:10px;color:#4A9EBF;margin-top:4px; }
+
+/* ── ALERT BANNER ── */
+.alert-banner { background:linear-gradient(135deg,#E6F5EC,#D4F0E2);border:1.5px solid var(--leaf);border-radius:12px;padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;gap:14px; }
+.alert-banner h4 { font-size:13px;font-weight:700;color:var(--earth);margin-bottom:3px; }
+.alert-banner p { font-size:12px;color:var(--gray); }
+
+/* ── CHARTS ── */
+.chart-card { background:#fff;border-radius:16px;padding:22px;box-shadow:var(--shadow);margin-bottom:22px; }
+.chart-card h3 { font-family:'Playfair Display',serif;font-size:18px;color:var(--earth);margin-bottom:4px; }
+.chart-card p { font-size:12px;color:var(--gray);margin-bottom:16px; }
+
+/* ── ADVISORY ── */
+.advisory-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px; }
+.advisory-card { background:#fff;border-radius:14px;padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--leaf); }
+.advisory-card .icon { font-size:28px;margin-bottom:10px; }
+.advisory-card h4 { font-size:14px;font-weight:700;color:var(--earth);margin-bottom:6px; }
+.advisory-card p { font-size:12px;color:var(--gray);line-height:1.6; }
+
+/* ── FIELD PHOTO ── */
+.field-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-radius:14px;overflow:hidden;height:140px;margin-bottom:22px;box-shadow:var(--shadow); }
+.fs-cell { position:relative;overflow:hidden; }
+.fs-cell img { width:100%;height:100%;object-fit:cover;transition:transform .4s; }
+.fs-cell:hover img { transform:scale(1.07); }
+.fs-label { position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;font-size:11px;font-weight:700;padding:10px 8px 6px;text-align:center; }
+
+@media(max-width:768px) { .weather-hero-inner { grid-template-columns:1fr; } .forecast-grid { grid-template-columns:repeat(3,1fr); } .advisory-grid { grid-template-columns:1fr; } .weather-content { padding:20px 18px 40px; } .field-strip { height:100px; } }
+</style>
+</head>
+<body>
+<div id="nav-root"></div>
+
+<!-- HERO -->
+<div class="weather-hero">
+  <div style="position:relative;z-index:1;margin-bottom:16px">
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px"><a href="index.html" style="color:rgba(255,255,255,.5);text-decoration:none">Home</a> › Weather</div>
+    <div class="loc-bar">
+      <div style="background:rgba(255,255,255,.15);border-radius:20px;padding:5px 10px;font-size:13px;color:#fff">📍</div>
+      <input type="text" id="locInput" placeholder="Enter city or district…" value="Lonavla, Maharashtra"/>
+      <button class="loc-btn" onclick="searchLocation()">Search</button>
+    </div>
+  </div>
+  <div class="weather-hero-inner">
+    <div class="temp-circle">
+      <div class="temp-main" id="mainTemp">28°</div>
+      <div style="font-size:20px;margin:2px 0">🌤️</div>
+      <div class="temp-feel">Feels like 30°C</div>
+    </div>
+    <div class="weather-info">
+      <h2 id="cityName">Lonavla, Maharashtra</h2>
+      <p id="weatherDesc">Partly Cloudy · Moderate breeze · Humidity 68%</p>
+      <div class="w-stats">
+        <div class="wstat"><div class="v">68%</div><div class="l">💧 Humidity</div></div>
+        <div class="wstat"><div class="v">18 km/h</div><div class="l">💨 Wind</div></div>
+        <div class="wstat"><div class="v">1012mb</div><div class="l">🌡️ Pressure</div></div>
+        <div class="wstat"><div class="v">8 km</div><div class="l">👁️ Visibility</div></div>
+        <div class="wstat"><div class="v" id="uvVal">5 (Mod)</div><div class="l">☀️ UV Index</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="weather-content">
+
+  <!-- ALERT -->
+  <div class="alert-banner">
+    <div style="font-size:28px">⚠️</div>
+    <div>
+      <h4>Weather Advisory – Next 48 Hours</h4>
+      <p id="alertText">Possibility of light showers on March 6–7. Complete harvesting before noon. Apply protective fungicides if crops are vulnerable to moisture.</p>
+    </div>
+  </div>
+
+  <!-- 7-DAY FORECAST -->
+  <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--earth);margin-bottom:14px">📅 7-Day Forecast</h3>
+  <div class="forecast-grid" id="forecastGrid"></div>
+
+  <!-- FIELD PHOTOS -->
+  <div class="field-strip">
+    <div class="fs-cell"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&q=80" alt="Field" loading="lazy"/><div class="fs-label">🌾 Your Fields</div></div>
+    <div class="fs-cell"><img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&q=80" alt="Crops" loading="lazy"/><div class="fs-label">🌱 Crop Health</div></div>
+    <div class="fs-cell"><img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=500&q=80" alt="Rain" loading="lazy"/><div class="fs-label">🌧️ Rainfall Forecast</div></div>
+  </div>
+
+  <!-- 30-DAY CHART -->
+  <div class="chart-card">
+    <h3>📈 30-Day Temperature & Rainfall</h3>
+    <p>Historical trends and outlook for better farming decisions</p>
+    <canvas id="weatherChart" height="90"></canvas>
+  </div>
+
+  <!-- HUMIDITY CHART -->
+  <div class="chart-card">
+    <h3>💧 Humidity Trend (30 Days)</h3>
+    <p>Daily humidity levels to plan irrigation and disease management</p>
+    <canvas id="humidityChart" height="70"></canvas>
+  </div>
+
+  <!-- FARMING ADVISORY -->
+  <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--earth);margin-bottom:14px">🌾 Farming Advisory</h3>
+  <div class="advisory-grid">
+    <div class="advisory-card"><div class="icon">🌱</div><h4>Sowing Advisory</h4><p>Current conditions are ideal for sowing Kharif crops. Soil moisture levels are adequate. Avoid sowing if rainfall probability exceeds 60%.</p></div>
+    <div class="advisory-card"><div class="icon">🐛</div><h4>Pest & Disease Alert</h4><p>High humidity for next 3 days increases risk of fungal diseases. Apply preventive fungicide spray before onset of rains.</p></div>
+    <div class="advisory-card"><div class="icon">💧</div><h4>Irrigation Schedule</h4><p>With moderate rainfall expected, reduce irrigation frequency by 30%. Pause sprinkler systems on days with forecast showers.</p></div>
+    <div class="advisory-card"><div class="icon">🌾</div><h4>Harvest Planning</h4><p>Dry sunny conditions for next 2 days – ideal for harvesting. Complete harvest before Friday's forecast showers.</p></div>
+    <div class="advisory-card"><div class="icon">🌡️</div><h4>Temperature Impact</h4><p>Max temperatures around 28–32°C this week. Tomato, chilli crops may see flower drop. Use shade nets during peak afternoon hours.</p></div>
+    <div class="advisory-card"><div class="icon">💨</div><h4>Wind Advisory</h4><p>Winds expected at 18–25 km/h. Support tall standing crops. Avoid spraying pesticides on windy days to prevent drift.</p></div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('weather');
+
+const FORECAST = [
+  {day:'Today',icon:'🌤️',hi:28,lo:20,rain:'10%'},
+  {day:'Thu',icon:'🌦️',hi:25,lo:19,rain:'40%'},
+  {day:'Fri',icon:'🌧️',hi:22,lo:18,rain:'70%'},
+  {day:'Sat',icon:'⛅',hi:26,lo:21,rain:'20%'},
+  {day:'Sun',icon:'☀️',hi:30,lo:22,rain:'5%'},
+  {day:'Mon',icon:'☀️',hi:32,lo:23,rain:'0%'},
+  {day:'Tue',icon:'🌤️',hi:29,lo:21,rain:'15%'},
+];
+
+// render forecast
+document.getElementById('forecastGrid').innerHTML = FORECAST.map((f,i)=>`
+  <div class="forecast-card ${i===0?'active':''}" onclick="selectDay(this,${i})">
+    <div class="day">${f.day}</div>
+    <div class="icon">${f.icon}</div>
+    <div class="temp-hi">${f.hi}°C</div>
+    <div class="temp-lo">${f.lo}°C low</div>
+    <div class="rain">🌧️ ${f.rain}</div>
+  </div>`).join('');
+
+function selectDay(card, i) {
+  document.querySelectorAll('.forecast-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  const f = FORECAST[i];
+  document.getElementById('mainTemp').textContent = f.hi + '°';
+  document.getElementById('weatherDesc').textContent = `${f.icon} Rain chance: ${f.rain} · Low: ${f.lo}°C`;
+}
+
+// 30-day data
+const days = Array.from({length:30},(_,i)=>i+1);
+const maxT = days.map(()=>Math.round(26+Math.random()*8));
+const minT = maxT.map(t=>Math.round(t-8+Math.random()*4));
+const rain = days.map(()=>+(Math.random()*18).toFixed(1));
+const hum = days.map(()=>Math.round(55+Math.random()*30));
+
+const ctx1 = document.getElementById('weatherChart').getContext('2d');
+new Chart(ctx1, {
+  data:{
+    labels: days.map(d=>`Mar ${d}`),
+    datasets:[
+      {type:'line',label:'Max Temp (°C)',data:maxT,borderColor:'#52B788',backgroundColor:'rgba(82,183,136,.07)',borderWidth:2.5,tension:.4,fill:false,pointRadius:2,yAxisID:'y'},
+      {type:'line',label:'Min Temp (°C)',data:minT,borderColor:'#95D5B2',backgroundColor:'rgba(149,213,178,.07)',borderWidth:2,tension:.4,fill:false,pointRadius:2,yAxisID:'y'},
+      {type:'bar',label:'Rainfall (mm)',data:rain,backgroundColor:'rgba(74,158,191,.4)',borderColor:'#4A9EBF',borderRadius:3,yAxisID:'y1'}
+    ]
+  },
+  options:{responsive:true,interaction:{mode:'index'},plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:false,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Space Mono',size:10}}},y1:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:{family:'Space Mono',size:10}}},x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10}}}}}
+});
+
+const ctx2 = document.getElementById('humidityChart').getContext('2d');
+new Chart(ctx2, {
+  type:'line',
+  data:{labels:days.map(d=>`Mar ${d}`),datasets:[{label:'Humidity %',data:hum,borderColor:'#4A9EBF',backgroundColor:'rgba(74,158,191,.15)',borderWidth:2.5,tension:.4,fill:true,pointRadius:1.5}]},
+  options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{min:40,max:100,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{family:'Space Mono',size:10}}},x:{grid:{display:false},ticks:{maxTicksLimit:8,font:{size:10}}}}}
+});
+
+function searchLocation() {
+  const loc = document.getElementById('locInput').value.trim() || 'Lonavla';
+  document.getElementById('cityName').textContent = loc;
+  document.getElementById('alertText').textContent = `Weather forecast updated for ${loc}. Check local conditions before spraying.`;
+  toast(`📍 Weather updated for ${loc}`, 'success');
+}
+</script>
+</body>
+</html>
